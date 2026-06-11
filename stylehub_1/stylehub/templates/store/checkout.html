@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+{% block title %}Checkout - StyleHub{% endblock %}
+
+{% block extra_css %}
+<style>
+.checkout-layout { display: grid; grid-template-columns: 1fr 360px; gap: 2rem; align-items: start; }
+.checkout-card { background: white; border-radius: 16px; padding: 2rem; box-shadow: var(--shadow); margin-bottom: 1.5rem; }
+.checkout-card h2 { font-size: 1.1rem; font-weight: 700; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem; }
+.form-group { margin-bottom: 1.25rem; }
+.form-group label { display: block; font-weight: 600; font-size: 0.9rem; margin-bottom: 0.4rem; }
+.form-group input, .form-group textarea, .form-group select {
+    width: 100%; padding: 0.75rem 1rem; border: 2px solid var(--border); border-radius: 8px;
+    font-family: 'Poppins', sans-serif; font-size: 0.9rem; transition: border 0.2s; outline: none;
+    background: var(--bg);
+}
+.form-group input:focus, .form-group textarea:focus { border-color: var(--primary); background: white; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.order-item { display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+.order-item:last-of-type { border: none; }
+.back-btn{display:inline-flex;align-items:center;gap:0.5rem;padding:0.7rem 1.2rem;background:white;border:2px solid var(--border); border-radius:10px;text-decoration:none;color:var(--dark);font-weight:600; margin-bottom:1rem;transition:0.2s;}
+.back-btn:hover{border-color:var(--primary);color:var(--primary); transform:translateX(-3px);}
+@media (max-width:768px) { .checkout-layout{grid-template-columns:1fr;} .form-row{grid-template-columns:1fr;} }
+</style>
+{% endblock %}
+
+{% block content %}
+<h1 style="font-size:1.8rem;font-weight:700;margin-bottom:1.5rem">💳 Checkout</h1>
+<h2><a href="javascript:history.back()" class="back-btn">← Back</a></h2>
+<form method="post">
+{% csrf_token %}
+<div class="checkout-layout">
+    <div>
+        <div class="checkout-card">
+            <h2>📍 Delivery Address</h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" name="name" value="{{ user.get_full_name }}" placeholder="Enter your full name" required>
+                </div>
+                <div class="form-group">
+                    <label>Phone Number</label>
+                    <input type="tel" name="phone" value="{{ user.phone }}" placeholder="10-digit mobile number" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Pincode</label>
+                    <input type="text" name="pincode" placeholder="6-digit pincode">
+                </div>
+                <div class="form-group">
+                    <label>City</label>
+                    <input type="text" name="city" placeholder="Your city">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>State</label>
+                <select name="state">
+                    <option>Uttar Pradesh</option><option>Bihar</option><option>Delhi</option>
+                    <option>Maharashtra</option><option>Rajasthan</option><option>Gujarat</option>
+                    <option>Karnataka</option><option>Tamil Nadu</option><option>Other</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Full Address (House No., Street, Area)</label>
+                <textarea name="address" rows="3" placeholder="Enter complete address..." required>{{ user.address }}</textarea>
+            </div>
+        </div>
+
+        <div class="checkout-card">
+            <h2>💳 Payment Method</h2>
+            <div style="display:flex;flex-direction:column;gap:0.75rem">
+                {% for method, label in payment_methods %}
+                <label style="display:flex;align-items:center;gap:0.75rem;padding:0.9rem;border:2px solid var(--border);border-radius:8px;cursor:pointer;font-weight:500">
+                    <input type="radio" name="payment" value="{{ method }}" {% if forloop.first %}checked{% endif %}>
+                    {{ label }}
+                </label>
+                {% empty %}
+                <label style="display:flex;align-items:center;gap:0.75rem;padding:0.9rem;border:2px solid var(--primary);border-radius:8px;cursor:pointer;font-weight:500">
+                    <input type="radio" name="payment" value="cod" checked> 💵 Cash on Delivery
+                </label>
+                <label style="display:flex;align-items:center;gap:0.75rem;padding:0.9rem;border:2px solid var(--border);border-radius:8px;cursor:pointer;font-weight:500">
+                    <input type="radio" name="payment" value="upi"> 📱 UPI (GPay/PhonePe/Paytm)
+                </label>
+                <label style="display:flex;align-items:center;gap:0.75rem;padding:0.9rem;border:2px solid var(--border);border-radius:8px;cursor:pointer;font-weight:500">
+                    <input type="radio" name="payment" value="card"> 💳 Credit/Debit Card
+                </label>
+                {% endfor %}
+            </div>
+            <div id="upi-qr-section" style="display:none;margin-top:1rem;padding:1rem;border:2px dashed var(--primary);border-radius:16px;background:rgba(59,130,246,0.06)">
+                <h3 style="font-size:1rem;font-weight:700;margin-bottom:0.75rem">Scan UPI QR to pay</h3>
+                <p style="margin-bottom:0.75rem;color:var(--dark);">Use GPay, PhonePe or Paytm to scan and pay <strong>₹{{ total }}</strong> to <strong>{{ upi_vpa }}</strong>.</p>
+                <div style="display:flex;flex-direction:column;align-items:center;gap:0.75rem;">
+                    <img id="upi-qr" src="{{ upi_qr_data }}" alt="UPI QR Code" style="max-width:260px;border-radius:16px;background:white;padding:0.5rem;" />
+                    <small style="color:var(--gray);text-align:center;">After scanning, complete payment in your UPI app. Then place the order.</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div>
+        <div class="checkout-card" style="position:sticky;top:80px">
+            <h2>🧾 Order Summary</h2>
+            {% for item in cart_items %}
+            <div class="order-item">
+                <span>{{ item.product.name|truncatechars:25 }} × {{ item.quantity }}</span>
+                <span style="font-weight:600">₹{{ item.product.price }}</span>
+            </div>
+            {% endfor %}
+            <div style="display:flex;justify-content:space-between;margin:0.75rem 0;font-size:0.9rem">
+                <span>Delivery</span><span style="color:var(--success);font-weight:600">FREE</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:1.3rem;font-weight:800;padding-top:1rem;border-top:2px solid var(--border)">
+                <span>Total</span><span>₹{{ total }}</span>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:100%;text-align:center;margin-top:1.5rem;font-size:1rem;padding:1rem">
+                ✅ Place Order →
+            </button>
+            <p style="text-align:center;font-size:0.75rem;color:var(--gray);margin-top:0.75rem">🔒 Secure & Encrypted Payment</p>
+        </div>
+    </div>
+</div>
+</form>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const qrSection = document.getElementById('upi-qr-section');
+        const paymentRadios = document.querySelectorAll('input[name="payment"]');
+
+        function updateQr() {
+            const selected = document.querySelector('input[name="payment"]:checked');
+            if (selected && selected.value === 'upi') {
+                qrSection.style.display = 'block';
+            } else {
+                qrSection.style.display = 'none';
+            }
+        }
+
+        paymentRadios.forEach(function (radio) {
+            radio.addEventListener('change', updateQr);
+        });
+
+        updateQr();
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block title %}UPI QR Code - StyleHub{% endblock %}
+
+{% block content %}
+<h1 style="font-size:1.8rem;font-weight:700;margin-bottom:1.5rem">📲 Scan UPI QR</h1>
+<div style="max-width:520px;margin:0 auto;padding:2rem;background:white;border-radius:20px;box-shadow:var(--shadow);">
+    <p style="font-size:1rem;color:var(--dark);margin-bottom:1.25rem">
+        Scan this QR code in GPay, PhonePe, Paytm, or any UPI app to send payment to <strong>{{ upi_vpa }}</strong>.
+    </p>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:1rem;">
+        <img src="{{ upi_qr_data }}" alt="UPI QR Code" style="width:320px;height:320px;border-radius:18px;background:white;padding:1rem;border:1px solid var(--border);" />
+        <div style="text-align:center;">
+            <p style="margin:0;font-weight:700;">UPI ID</p>
+            <p style="margin:0.25rem 0;color:var(--primary);font-size:1.1rem;">{{ upi_vpa }}</p>
+            <p style="margin:0;color:var(--gray);font-size:0.9rem;">Open your UPI app and scan this QR code.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

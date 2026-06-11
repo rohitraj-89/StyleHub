@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% block title %}StyleHub - India's Coolest Fashion Store{% endblock %}
+
+{% block extra_css %}
+<style>
+.hero {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    border-radius: 16px; padding: 4rem 3rem; margin-bottom: 3rem;
+    display: flex; align-items: center; justify-content: space-between;
+    overflow: hidden; position: relative;
+}
+.hero::before {
+    content: ''; position: absolute; top: -50%; right: -10%;
+    width: 600px; height: 600px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(232,71,10,0.2), transparent 70%);
+}
+.hero-text h1 { font-family: 'Playfair Display', serif; font-size: 3rem; color: white; line-height: 1.2; margin-bottom: 1rem; }
+.hero-text h1 span { color: var(--accent); }
+.hero-text p { color: #aaa; font-size: 1.1rem; margin-bottom: 2rem; }
+.hero-emoji { font-size: 8rem; opacity: 0.8; }
+.offer-bar {
+    background: var(--primary); border-radius: 12px; padding: 1rem 2rem;
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 2.5rem;
+    flex-wrap: wrap; gap: 1rem;
+}
+.offer-bar p { color: white; font-weight: 600; font-size: 0.95rem; }
+.offer-bar span { background: white; color: var(--primary); padding: 0.3rem 0.8rem; border-radius: 6px; font-weight: 700; font-size: 0.85rem; }
+.cat-section { margin-bottom: 3rem; }
+.cat-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding-bottom: 0.75rem; margin-bottom: 1.5rem;
+    border-bottom: 3px solid var(--border);
+}
+.cat-header h2 { font-size: 1.4rem; font-weight: 700; }
+.cat-header h2 .emoji { margin-right: 0.5rem; }
+.cat-header a { color: var(--primary); font-weight: 600; font-size: 0.9rem; text-decoration: none; }
+.cat-header a:hover { text-decoration: underline; }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- HERO -->
+<div class="hero">
+    <div class="hero-text">
+        <h1>Fashion That <span>Speaks</span> For You</h1>
+        <p>Discover trending styles at unbeatable prices</p>
+        <div style="display:flex;gap:1rem;flex-wrap:wrap;">
+            <a href="/category/women/" class="btn btn-primary">Shop Women</a>
+            <a href="/category/men/" class="btn btn-accent">Shop Men</a>
+        </div>
+    </div>
+    <div class="hero-emoji">👗</div>
+</div>
+
+<!-- OFFER BAR -->
+<div class="offer-bar">
+    <p>🎉 Grand Sale is LIVE! Up to 80% off on all categories</p>
+    <p>🚚 Free delivery on orders above ₹499 <span>USE: STYLE50</span></p>
+    <p>⚡ New arrivals every week!</p>
+</div>
+
+<!-- CATEGORY SECTIONS -->
+{% for cat, products in category_products.items %}
+<div class="cat-section">
+    <div class="cat-header">
+        <h2>
+            <span class="emoji">
+                {% if cat == 'women' %}👗{% elif cat == 'men' %}👔{% elif cat == 'kids' %}🧒{% elif cat == 'boys' %}👦{% else %}👟{% endif %}
+            </span>
+            {{ cat|title }}
+        </h2>
+        <a href="/category/{{ cat }}/">See All →</a>
+    </div>
+    <div class="products-grid">
+        {% for product in products %}
+        <div class="product-card" onclick="window.location='/product/{{ product.id }}/'">
+            {% if product.image_url %}
+                <img src="{{ product.image_url }}" alt="{{ product.name }}" class="product-img" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                <div class="product-img-placeholder" style="display:none">
+                    {% if cat == 'women' %}👗{% elif cat == 'men' %}👔{% elif cat == 'kids' %}🧒{% elif cat == 'boys' %}👦{% else %}👟{% endif %}
+                </div>
+            {% else %}
+                <div class="product-img-placeholder">
+                    {% if cat == 'women' %}👗{% elif cat == 'men' %}👔{% elif cat == 'kids' %}🧒{% elif cat == 'boys' %}👦{% else %}👟{% endif %}
+                </div>
+            {% endif %}
+            <div class="product-info">
+                <div class="product-name">{{ product.name }}</div>
+                <div class="product-price">
+                    <span class="price-current">₹{{ product.price }}</span>
+                    {% if product.original_price %}
+                        <span class="price-original">₹{{ product.original_price }}</span>
+                        <span class="price-discount">{{ product.discount_percent }}% off</span>
+                    {% endif %}
+                </div>
+                <div class="rating">
+                    <span class="rating-badge">⭐ {{ product.rating }}</span>
+                    <span style="color:var(--gray)">({{ product.reviews_count }})</span>
+                </div>
+            </div>
+            <div class="product-actions">
+                <a href="/cart/add/{{ product.id }}/" class="btn btn-outline" style="font-size:0.8rem;padding:0.5rem" onclick="event.stopPropagation()">🛒 Add</a>
+                <a href="/buy-now/{{ product.id }}/" class="btn btn-primary" style="font-size:0.8rem;padding:0.5rem" onclick="event.stopPropagation()">Buy Now</a>
+            </div>
+        </div>
+        {% empty %}
+        <p style="color:var(--gray)">No products in this category yet.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endfor %}
+{% endblock %}

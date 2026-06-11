@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% block title %}Order #{{ order.id }} - StyleHub{% endblock %}
+
+{% block content %}
+<div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem">
+    <a href="/orders/" style="color:var(--primary);text-decoration:none">← My Orders</a>
+    <h1 style="font-size:1.8rem;font-weight:700">Order #{{ order.id }}</h1>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 360px;gap:2rem;align-items:start">
+    <div>
+        <div style="background:white;border-radius:16px;padding:1.5rem;box-shadow:var(--shadow);margin-bottom:1.5rem">
+            <h2 style="font-size:1rem;font-weight:700;margin-bottom:1.25rem;color:var(--gray);text-transform:uppercase;letter-spacing:1px">Order Items</h2>
+            {% for item in order.items.all %}
+            <div style="display:flex;align-items:center;gap:1rem;padding:1rem 0;border-bottom:1px solid var(--border)">
+                <div style="width:70px;height:70px;border-radius:8px;background:var(--light-gray);display:flex;align-items:center;justify-content:center;font-size:2rem;flex-shrink:0">
+                    {% if item.product.category == 'women' %}👗{% elif item.product.category == 'men' %}👔{% elif item.product.category == 'shoes' %}👟{% else %}👕{% endif %}
+                </div>
+                <div style="flex:1">
+                    <div style="font-weight:600">{{ item.product.name }}</div>
+                    <div style="color:var(--gray);font-size:0.85rem">Qty: {{ item.quantity }}</div>
+                </div>
+                <div style="font-weight:700">₹{{ item.price }}</div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div style="background:white;border-radius:16px;padding:1.5rem;box-shadow:var(--shadow)">
+            <h2 style="font-size:1rem;font-weight:700;margin-bottom:1.25rem;color:var(--gray);text-transform:uppercase;letter-spacing:1px">Delivery Address</h2>
+            <p style="font-weight:600;margin-bottom:0.3rem">{{ user.get_full_name|default:user.username }}</p>
+            <p style="color:var(--gray)">{{ order.address }}</p>
+            <p style="color:var(--gray)">📞 {{ order.phone }}</p>
+        </div>
+    </div>
+
+    <div style="background:white;border-radius:16px;padding:1.5rem;box-shadow:var(--shadow);position:sticky;top:80px">
+        <h2 style="font-size:1rem;font-weight:700;margin-bottom:1.25rem;color:var(--gray);text-transform:uppercase;letter-spacing:1px">Order Summary</h2>
+        <div style="display:flex;justify-content:space-between;margin-bottom:0.75rem;font-size:0.9rem">
+            <span>Order Date</span><span>{{ order.created_at|date:"d M Y" }}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:0.75rem;font-size:0.9rem">
+            <span>Delivery</span><span style="color:var(--success);font-weight:600">FREE</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:1.2rem;font-weight:800;padding-top:1rem;border-top:2px solid var(--border)">
+            <span>Total</span><span>₹{{ order.total_price }}</span>
+        </div>
+        <div style="margin-top:1.5rem;text-align:center">
+            <span style="
+                padding:0.6rem 1.5rem;border-radius:20px;font-size:0.9rem;font-weight:700;display:inline-block;
+                {% if order.status == 'delivered' %}background:#dcfce7;color:#15803d;
+                {% elif order.status == 'shipped' %}background:#dbeafe;color:#1d4ed8;
+                {% elif order.status == 'confirmed' %}background:#fef9c3;color:#854d0e;
+                {% elif order.status == 'cancelled' %}background:#fee2e2;color:#dc2626;
+                {% else %}background:#f3f4f6;color:#374151;{% endif %}
+            ">{{ order.status|title }}</span>
+        </div>
+        <div style="margin-top:1.5rem;padding:1rem;background:var(--light-gray);border-radius:8px;font-size:0.85rem">
+            <div style="margin-bottom:0.3rem;display:flex;gap:0.5rem;align-items:center">
+                <span style="width:10px;height:10px;background:var(--success);border-radius:50%;display:inline-block"></span>
+                <span>Order Placed</span>
+            </div>
+            <div style="margin-bottom:0.3rem;display:flex;gap:0.5rem;align-items:center;color:{% if order.status in 'confirmed,shipped,delivered' %}var(--dark){% else %}var(--gray){% endif %}">
+                <span style="width:10px;height:10px;background:{% if order.status in 'confirmed,shipped,delivered' %}var(--accent){% else %}var(--border){% endif %};border-radius:50%;display:inline-block"></span>
+                <span>Confirmed</span>
+            </div>
+            <div style="margin-bottom:0.3rem;display:flex;gap:0.5rem;align-items:center;color:{% if order.status in 'shipped,delivered' %}var(--dark){% else %}var(--gray){% endif %}">
+                <span style="width:10px;height:10px;background:{% if order.status in 'shipped,delivered' %}#3b82f6{% else %}var(--border){% endif %};border-radius:50%;display:inline-block"></span>
+                <span>Shipped</span>
+            </div>
+            <div style="display:flex;gap:0.5rem;align-items:center;color:{% if order.status == 'delivered' %}var(--dark){% else %}var(--gray){% endif %}">
+                <span style="width:10px;height:10px;background:{% if order.status == 'delivered' %}var(--success){% else %}var(--border){% endif %};border-radius:50%;display:inline-block"></span>
+                <span>Delivered</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

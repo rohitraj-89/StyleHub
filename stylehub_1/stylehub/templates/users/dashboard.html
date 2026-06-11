@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard - StyleHub{% endblock %}
+
+{% block extra_css %}
+<style>
+.dash-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; }
+.dash-header h1 { font-size: 1.8rem; font-weight: 800; }
+.role-badge { padding: 0.4rem 1rem; border-radius: 20px; font-size: 0.85rem; font-weight: 700; background: {% if user.role == 'admin' %}linear-gradient(135deg, var(--primary), var(--accent)){% else %}#dbeafe{% endif %}; color: {% if user.role == 'admin' %}white{% else %}#1d4ed8{% endif %}; }
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.25rem; margin-bottom: 2.5rem; }
+.stat-card { background: white; border-radius: 16px; padding: 1.5rem; box-shadow: var(--shadow); display: flex; align-items: center; gap: 1rem; }
+.stat-icon { width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; flex-shrink: 0; }
+.stat-value { font-size: 2rem; font-weight: 800; }
+.stat-label { color: var(--gray); font-size: 0.85rem; font-weight: 500; }
+.section-box { background: white; border-radius: 16px; box-shadow: var(--shadow); overflow: hidden; margin-bottom: 2rem; }
+.section-box-header { padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border); font-weight: 700; font-size: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+table { width: 100%; border-collapse: collapse; }
+th { padding: 0.75rem 1.25rem; text-align: left; font-size: 0.8rem; color: var(--gray); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); background: var(--bg); }
+td { padding: 0.9rem 1.25rem; font-size: 0.9rem; border-bottom: 1px solid var(--border); }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--bg); }
+.status-badge { padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dash-header">
+    <div>
+        <h1>👋 Hey, {{ user.username }}!</h1>
+        <p style="color:var(--gray)">Here's what's happening at StyleHub today</p>
+    </div>
+    <span class="role-badge">{{ user.role|title }}</span>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon" style="background:#fff0e8">📦</div>
+        <div>
+            <div class="stat-value">{{ total_orders }}</div>
+            <div class="stat-label">Total Orders</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background:#f0fdf4">👕</div>
+        <div>
+            <div class="stat-value">{{ total_products }}</div>
+            <div class="stat-label">Products</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background:#eff6ff">👥</div>
+        <div>
+            <div class="stat-value">{{ total_users }}</div>
+            <div class="stat-label">Customers</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background:#fefce8">💰</div>
+        <div>
+            <div class="stat-value">Active</div>
+            <div class="stat-label">Store Status</div>
+        </div>
+    </div>
+</div>
+
+<div class="section-box">
+    <div class="section-box-header">📋 Recent Orders</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Order ID</th>
+                <th>Customer</th>
+                <th>Amount</th>
+                <th>Date</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in recent_orders %}
+            <tr>
+                <td><strong>#{{ order.id }}</strong></td>
+                <td>{{ order.user.username }}</td>
+                <td><strong>₹{{ order.total_price }}</strong></td>
+                <td>{{ order.created_at|date:"d M Y" }}</td>
+                <td>
+                    <span class="status-badge" style="
+                        {% if order.status == 'delivered' %}background:#dcfce7;color:#15803d;
+                        {% elif order.status == 'shipped' %}background:#dbeafe;color:#1d4ed8;
+                        {% elif order.status == 'confirmed' %}background:#fef9c3;color:#854d0e;
+                        {% elif order.status == 'cancelled' %}background:#fee2e2;color:#dc2626;
+                        {% else %}background:#f3f4f6;color:#374151;{% endif %}">
+                        {{ order.status|title }}
+                    </span>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" style="text-align:center;color:var(--gray);padding:2rem">No orders yet</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if user.role == 'admin' %}
+<div class="section-box">
+    <div class="section-box-header">🛍️ Product Inventory</div>
+    <table>
+        <thead>
+            <tr><th>Product</th><th>Category</th><th>Price</th><th>Stock</th><th>Rating</th></tr>
+        </thead>
+        <tbody>
+            {% for product in products %}
+            <tr>
+                <td><strong>{{ product.name }}</strong></td>
+                <td>{{ product.category|title }}</td>
+                <td>₹{{ product.price }}</td>
+                <td>
+                    <span style="color:{% if product.stock < 5 %}#dc2626{% else %}#15803d{% endif %};font-weight:600">
+                        {{ product.stock }}
+                    </span>
+                </td>
+                <td>⭐ {{ product.rating }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" style="text-align:center;color:var(--gray);padding:2rem">No products yet. Add from Django Admin.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+{% endblock %}

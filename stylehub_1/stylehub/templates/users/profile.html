@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block title %}My Profile - StyleHub{% endblock %}
+
+{% block content %}
+<div style="max-width:600px;margin:0 auto">
+    <h1 style="font-size:1.8rem;font-weight:700;margin-bottom:1.5rem">👤 My Profile</h1>
+    <div style="background:white;border-radius:16px;padding:2rem;box-shadow:var(--shadow)">
+        <div style="display:flex;align-items:center;gap:1.5rem;margin-bottom:2rem;padding-bottom:2rem;border-bottom:1px solid var(--border)">
+            <div style="width:70px;height:70px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--accent));display:flex;align-items:center;justify-content:center;font-size:2rem;color:white;font-weight:700">
+                {{ user.username.0|upper }}
+            </div>
+            <div>
+                <div style="font-size:1.3rem;font-weight:700">{{ user.username }}</div>
+                <div style="color:var(--gray);font-size:0.9rem">{{ user.email }}</div>
+                <span style="display:inline-block;margin-top:0.3rem;padding:0.2rem 0.7rem;border-radius:20px;font-size:0.75rem;font-weight:700;background:{% if user.role == 'admin' %}linear-gradient(135deg,var(--primary),var(--accent));color:white{% elif user.role == 'staff' %}#dbeafe;color:#1d4ed8{% else %}#f3f4f6;color:#374151{% endif %}">
+                    {{ user.role|title }}
+                </span>
+            </div>
+        </div>
+        <form method="post">
+            {% csrf_token %}
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+                <div>
+                    <label style="display:block;font-weight:600;font-size:0.85rem;margin-bottom:0.4rem">First Name</label>
+                    <input type="text" name="first_name" value="{{ user.first_name }}" style="width:100%;padding:0.75rem;border:2px solid var(--border);border-radius:8px;font-family:'Poppins',sans-serif;outline:none">
+                </div>
+                <div>
+                    <label style="display:block;font-weight:600;font-size:0.85rem;margin-bottom:0.4rem">Last Name</label>
+                    <input type="text" name="last_name" value="{{ user.last_name }}" style="width:100%;padding:0.75rem;border:2px solid var(--border);border-radius:8px;font-family:'Poppins',sans-serif;outline:none">
+                </div>
+            </div>
+            <div style="margin-top:1rem">
+                <label style="display:block;font-weight:600;font-size:0.85rem;margin-bottom:0.4rem">Phone</label>
+                <input type="tel" name="phone" value="{{ user.phone }}" placeholder="Mobile number" style="width:100%;padding:0.75rem;border:2px solid var(--border);border-radius:8px;font-family:'Poppins',sans-serif;outline:none">
+            </div>
+            <div style="margin-top:1rem">
+                <label style="display:block;font-weight:600;font-size:0.85rem;margin-bottom:0.4rem">Default Address</label>
+                <textarea name="address" rows="3" placeholder="Your default delivery address" style="width:100%;padding:0.75rem;border:2px solid var(--border);border-radius:8px;font-family:'Poppins',sans-serif;outline:none;resize:vertical">{{ user.address }}</textarea>
+            </div>
+            <button type="submit" class="btn btn-primary" style="margin-top:1.5rem;width:100%;padding:0.9rem;font-size:1rem">Save Changes</button>
+        </form>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem">
+        <a href="/orders/" class="btn btn-outline" style="text-align:center;padding:0.9rem">📦 My Orders</a>
+        <a href="/cart/" class="btn btn-outline" style="text-align:center;padding:0.9rem">🛒 My Cart</a>
+    </div>
+</div>
+{% endblock %}
